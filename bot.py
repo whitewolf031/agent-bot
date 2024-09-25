@@ -1,79 +1,113 @@
+import os
 import time
 from telebot import TeleBot
 from keyboard import *
 from localization.lang import *
+from dotenv import load_dotenv
 
-token = "7752906132:AAGAtoPZApvDMtgexWwMOjHHpekGV3QElAY"
+load_dotenv()
+token = os.getenv("TOKEN")
 
 bot = TeleBot(token)
 
 user_data = {}
 user_langs = {}
+personal_details = {}
+canal_id = os.getenv("CANAL_ID")
+group_id = os.getenv("GROUP_ID")
+instagram_link = os.getenv("INSTAGRAM_URL")
+facebook_link = os.getenv("FACEBOOK_URL")
+youtube_link = os.getenv("YOUTUBE_URL")
+twitter_link = os.getenv("TWITTER_URL")
+
+
 
 @bot.message_handler(commands=["start"])
 def start(message):
     chat_id = message.chat.id
     lang = user_langs.get(chat_id, "uz")
-    bot.send_message(chat_id, "Butunjahon Yoshlar Assotsiatsiyasining Misrdagi ofisiga Xush kelibsiz!", reply_markup=generate_language())
-    bot.register_next_step_handler(message, choose_lang)
+    photo = open("media/start_image.jpg", "rb")
+    bot.send_photo(chat_id, photo, start_message[lang], reply_markup=generate_language())
 
 
-def choose_lang(message):
-    chat_id = message.chat.id
-    bot.send_message(chat_id, "Quyidagilardan birini tanlang!", reply_markup=generate_main_menu())
-    bot.register_next_step_handler(message, main_menu)
+@bot.callback_query_handler(func=lambda call: call.data in ["uz", "ar","en", "gr","fr"])
+def language(call):
+    chat_id = call.message.chat.id
+    lang = user_langs.get(chat_id, "uz")
+    if call.data == "uz":
+        lang = "uz"
+
+    elif call.data == "ar":
+        lang = "ar"
+
+    elif call.data == "en":
+        lang = "en"
+
+    elif call.data == "gr":
+        lang = "gr"
+
+    elif call.data == "fr":
+        lang = "fr"
+
+
+    bot.send_message(chat_id, choose_language[lang], reply_markup=generate_main_menu(lang))
+
+    bot.register_next_step_handler(call.message, main_menu)
+    user_langs[chat_id] = lang
 
 
 def main_menu(message):
     chat_id = message.chat.id
+    lang = user_langs.get(chat_id, "uz")
     photo = open("media/vision.png", 'rb')
-    if message.text == "🎯 Biz haqimizda":
-        bot.send_photo(chat_id, photo, caption="\n<b>MissiyaMissiya</b>: Biz yosh avlodga global imkoniyatlar yaratish orqali ularning shaxsiy va kasbiy rivojlanishiga hissa qo‘shishni maqsad qilganmiz."
-                                               "\n<b>Vizyon</b>: Yoshlarning ta’lim, tadbirkorlik va ko‘ngillilik yo‘nalishlaridagi imkoniyatlarini kengaytirib, kelajakda muvaffaqiyatli yetakchilarni tarbiyalash.\n\nBizning jamoamiz xalqaro tajribaga ega, faol va iqtidorli yoshlar, tadbirkorlar hamda yetakchilardan iborat. "
-                                               "Har bir jamoa a’zosi yoshlar o‘rtasida global hamkorlikni mustahkamlash va yangi imkoniyatlar yaratishda muhim rol o‘ynaydi.\n\n"
-                                               "Tashkilotimiz 2000-yillarning boshida yoshlar almashinuvi dasturlarini rivojlantirish va yosh avlodga xalqaro miqyosda yangi imkoniyatlar yaratish maqsadida tashkil topgan. Bugungi kunda, biz minglab yoshlarni global platformalarda muvaffaqiyatli ishtirok etishlariga ko‘maklashib kelmoqdamiz.",
-                                                parse_mode="HTML", reply_markup=generate_back())
+    if message.text == about_bot[lang]:
+        bot.send_photo(chat_id, photo, caption=about_caption[lang],
+                                                parse_mode="HTML", reply_markup=generate_back(lang))
         bot.register_next_step_handler(message, back)
 
 
-
-    elif message.text == "💬 Biz bilan bog‘laning":
-        bot.send_message(chat_id, "\nAloqa ma’lumotlari:\n\nTelefon raqamlari: +998991234567\n"
-                                  "Elektron pochta: example@gmail.com\n"
-                                  "Manzillari: Nil bo’yi\n"
-                                  "Ofis vaqtlari: 09:00 – 18:00.", reply_markup=generate_connect())
+    elif message.text == connect_lang[lang]:
+        bot.send_message(chat_id, connect_line_text[lang], reply_markup=generate_connect(lang))
         bot.register_next_step_handler(message, connect)
 
-    elif message.text == "🌐 Ijtimoiy tarmoqlar":
-        bot.send_message(chat_id, message.text)
 
-    elif message.text == "📑 Yangiliklar va E'lonlar":
-        bot.send_message(chat_id, message.text)
+    elif message.text == network[lang]:
+        bot.send_message(chat_id, text_network[lang], reply_markup=socialmedia(lang, facebook_link, instagram_link, twitter_link, youtube_link))
+        bot.register_next_step_handler(message, back)
 
-    elif message.text == "📝 So‘rov va Fikr-mulohaza":
-        bot.send_message(chat_id, message.text)
+    elif message.text == news_lang[lang]:
+        bot.send_message(chat_id, news_lang[lang], reply_markup=globalopportunities(lang))
+        bot.register_next_step_handler(message, news)
 
-    elif message.text == "📊 Yoshlar uchun resurslar":
-        bot.send_message(chat_id, message.text)
+    elif message.text == competitions[lang]:
+        bot.send_photo(chat_id, photo, caption=siyrat_lang[lang], reply_markup=generate_challange(lang))
 
-    elif message.text == "Tilni o'zgartirish":
-        bot.send_message(chat_id, "Tilni tanlang!",
-                         reply_markup=generate_language())
-        bot.register_next_step_handler(message, choose_lang)
+
+    elif message.text == resurs_lang[lang]:
+        bot.send_message(chat_id, message.text, reply_markup=generate_resource(lang))
+        bot.register_next_step_handler(message, news)
+
+
+    elif message.text == change_lang[lang]:
+        return start(message)
+
+
 
 def connect(message):
     chat_id = message.chat.id
-    if message.text == "Bizning Geolokatsiya":
-        bot.send_message(chat_id, 'Bizning Geolokatsiya')
-        bot.send_location(chat_id, latitude=40.86091, longitude=69.58965, reply_markup=generate_back())
+    lang = user_langs.get(chat_id, "uz")
+
+    if message.text == location[lang]:
+        bot.send_message(chat_id, location[lang])
+        bot.send_location(chat_id, latitude=40.86091, longitude=69.58965, reply_markup=generate_back(lang))
         bot.register_next_step_handler(message, back_connect)
 
-    elif message.text == "Savol/Taklif yuborish":
-        bot.send_message(chat_id, "F.I.O yuboring: ")
+    elif message.text == quest_lang[lang]:
+        bot.send_message(chat_id, fio_lang[lang])
         bot.register_next_step_handler(message, user_email)
 
 
-    elif message.text == "Orqaga":
+    elif message.text == back_lang[lang]:
         return back(message)
 
 
@@ -81,84 +115,170 @@ def connect(message):
 def user_email(message):
     fio = message.text
     chat_id = message.chat.id
-    bot.send_message(chat_id, "Elektron pochtangizni yuboring: ")
+    lang = user_langs.get(chat_id, "uz")
+
+    bot.send_message(chat_id, send_email[lang])
     bot.register_next_step_handler(message, user_question,fio)
 
 
 def user_question(message, fio):
     email = message.text
+
     chat_id = message.chat.id
+    lang = user_langs.get(chat_id, "uz")
+
     if "@" in email:
-        bot.send_message(chat_id, "Savol/Taklifingizni yuboring: ")
+        bot.send_message(chat_id, request_lang[lang])
         bot.register_next_step_handler(message, user_phone,  fio, email)
 
     else:
-        bot.send_message(chat_id, "Elektron pochta xato kiritildi.\nPochtangizni qaytadan yuboring!")
+        bot.send_message(chat_id, email_text[lang])
         time.sleep(1)
-        bot.send_message(chat_id, "Elektron pochtangizni yuboring: ")
+        bot.send_message(chat_id, send_email[lang])
         bot.register_next_step_handler(message, user_question, fio)
-
+3
 
 def user_phone(message, fio, email):
     quest = message.text
     chat_id = message.chat.id
-    bot.send_message(chat_id, "Tel raqamingizni +998 ** *** ** ** korinishida yuboring: ", reply_markup=contact())
+    lang = user_langs.get(chat_id, "uz")
+
+    bot.send_message(chat_id, phone_number_lang[lang], reply_markup=contact(lang))
     bot.register_next_step_handler(message, send_group_message, fio, quest, email)
 
 
 def send_group_message(message, fio, quest, email):
     chat_id = message.chat.id
+    lang = user_langs.get(chat_id, "uz")
+
     if message.text:
         phone = message.text
-        bot.send_message(chat_id, f"Tasdiqlaysizmi?!\nF.I.O:{fio}\n"
-                                  f"Elektron pochtangiz: {email}\n"
-                                  f"Savol/Taklifingiz: {quest}\n"
-                                  f"Tel raqamingiz: {phone}", reply_markup=commit())
-        bot.register_next_step_handler(message, message_commit, fio, email, quest, phone)
+        personal_details['fio'] = fio
+        personal_details['email'] = email
+        personal_details['quest'] = quest
+        personal_details['phone'] = phone
+        bot.send_message(chat_id, f"{confirm_lang[lang]} {fio}\n"
+                                  f"{email_prompts_lang[lang]} {email}\n"
+                                  f"{quest_offer_lang[lang]}{quest}\n"
+                                  f"{user_phone_number_lang[lang]} {phone}", reply_markup=commit(lang))
 
     elif message.contact:
         phone = message.contact.phone_number
-        bot.send_message(chat_id, f"Tasdiqlaysizmi?!\nF.I.O:{fio}\n"
-                                  f"Elektron pochtangiz: {email}\n"
-                                  f"Savol/Taklifingiz: {quest}\n"
-                                  f"Tel raqamingiz: {phone}", reply_markup=commit())
-        bot.register_next_step_handler(message, message_commit, fio, email, quest, phone)
-def message_commit(message, fio, email, quest, phone):
-    chat_id = message.chat.id
-    if message.text == 'Ha':
-        bot.send_message(chat_id, "Ma'lumotlar qabul qilindi!")
-        bot.send_message(-1002348352534, f"Tasdiqlaysizmi?!\nF.I.O:{fio}\n"
-                                  f"Elektron pochtangiz: {email}\n"
-                                  f"Savol/Taklifingiz: {quest}\n"
-                                  f"Tel raqamingiz: {phone}")
+        personal_details['fio'] = fio
+        personal_details['email'] = email
+        personal_details['quest'] = quest
+        personal_details['phone'] = phone
+        bot.send_message(chat_id, f"{confirm_lang[lang]} {fio}\n"
+                                  f"{email_prompts_lang[lang]} {email}\n"
+                                  f"{quest_offer_lang[lang]}{quest}\n"
+                                  f"{user_phone_number_lang[lang]} {phone}", reply_markup=commit(lang))
+
+
+@bot.callback_query_handler(func=lambda call: call.data in ["yes", "no"])
+def message_commit(call):
+    chat_id = call.message.chat.id
+    fio = personal_details['fio']
+    email = personal_details['email']
+    quest = personal_details['quest']
+    phone = personal_details['phone']
+    lang = user_langs.get(chat_id, "uz")
+
+    if call.data == 'yes':
+        bot.send_message(chat_id, information_received_lang[lang])
+        bot.send_message(canal_id, f"{confirm_lang[lang]} {fio}\n"
+                                  f"{email_prompts_lang[lang]} {email}\n"
+                                  f"{quest_offer_lang[lang]}{quest}\n"
+                                  f"{user_phone_number_lang[lang]} {phone}")
         time.sleep(3)
-        bot.send_message(chat_id, "Quyidagilardan birini tanlang!", reply_markup=generate_main_menu())
-        bot.register_next_step_handler(message, main_menu)
+        bot.send_message(chat_id, choose_language[lang], reply_markup=generate_main_menu(lang))
 
-    elif message.text == "Yo'q":
-        bot.send_message(chat_id, "\nAloqa ma’lumotlari:\n\nTelefon raqamlari: +998991234567\n"
-                                  "Elektron pochta: example@gmail.com\n"
-                                  "Manzillari: Nil bo’yi\n"
-                                  "Ofis vaqtlari: 09:00 – 18:00.", reply_markup=generate_connect())
-        bot.register_next_step_handler(message, connect)
+        bot.register_next_step_handler(call.message, main_menu)
+
+    elif call.data == "no":
+        bot.send_message(chat_id, connect_line_text[lang], reply_markup=generate_connect(lang))
+        bot.register_next_step_handler(call.message, connect)
 
 
+def social_media(message):
+    chat_id = message.chat.id
+    lang = user_langs.get(chat_id, "uz")
 
-
+    if message.text == back_lang[lang]:
+        return back(message)
 
 def back_connect(message):
     chat_id = message.chat.id
-    if message.text == "Orqaga":
-        bot.send_message(chat_id, "\nAloqa ma’lumotlari:\n\nTelefon raqamlari: +998991234567\n"
-                                  "Elektron pochta: example@gmail.com\n"
-                                  "Manzillari: Nil bo’yi\n"
-                                  "Ofis vaqtlari: 09:00 – 18:00.", reply_markup=generate_connect())
+    lang = user_langs.get(chat_id, "uz")
+
+    if message.text == back_lang[lang]:
+        bot.send_message(chat_id, connect_line_text[lang], reply_markup=generate_connect(lang))
         bot.register_next_step_handler(message, connect)
 
 
 def back(message):
-    if message.text == "Orqaga":
-        return choose_lang(message)
+    chat_id = message.chat.id
+    lang = user_langs.get(chat_id, "uz")
+    if message.text == back_lang[lang]:
+        bot.send_message(chat_id, choose_language[lang], reply_markup=generate_main_menu(lang))
+
+        bot.register_next_step_handler(message, main_menu)
+
+
+
+def news(message):
+    chat_id = message.chat.id
+    lang = user_langs.get(chat_id, "uz")
+    bot.send_message(chat_id, choose_language[lang], reply_markup=generate_main_menu(lang))
+
+    bot.register_next_step_handler(message, main_menu)
+
+
+
+#########################################
+#Musobaqa
+#########################################
+
+def send_answer_tournament(message):
+    chat_id = message.chat.id
+    lang = user_langs.get(chat_id, "uz")
+
+    username = message.from_user.username
+    bot.send_message(chat_id, accept_answer_lang[lang])
+    bot.send_message(group_id, f"Savol @{username}:\n\n{message.text}")
+    time.sleep(2)
+    bot.send_message(chat_id, choose_language[lang], reply_markup=generate_main_menu(lang))
+    bot.register_next_step_handler(message, main_menu)
+
+
+
+#########################################
+#inline
+#########################################
+
+
+
+
+
+@bot.callback_query_handler(func=lambda call: call.data == "siyrat")
+def siyrat_inline(call):
+    chat_id = call.message.chat.id
+    lang = user_langs.get(chat_id, "uz")
+
+    bot.send_message(chat_id, question_lang[lang])
+    bot.register_next_step_handler(call.message, send_answer_tournament)
+
+
+
+@bot.callback_query_handler(func=lambda call: call.data == "_back")
+def back_inline(call):
+    chat_id = call.message.chat.id
+    lang = user_langs.get(chat_id, "uz")
+    bot.send_message(chat_id, choose_language[lang], reply_markup=generate_main_menu(lang))
+
+    bot.register_next_step_handler(call.message, main_menu)
+
+
+
 
 
 bot.polling(non_stop=True)

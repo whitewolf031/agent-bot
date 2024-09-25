@@ -1,61 +1,107 @@
 from telebot import types
 
+from localization.lang import *
+
 
 def generate_language():
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    btn_uz = types.KeyboardButton(text="Uz")
-    btn_ar = types.KeyboardButton(text="Ar")
-    btn_en = types.KeyboardButton(text="En")
-    btn_gr = types.KeyboardButton(text="Gr")
-    btn_fr = types.KeyboardButton(text="Fr")
+    keyboard = types.InlineKeyboardMarkup()
+    btn_uz = types.InlineKeyboardButton(text="🇺🇿Uz", callback_data="uz")
+    btn_ar = types.InlineKeyboardButton(text="🇸🇦Ar", callback_data="ar")
+    btn_en = types.InlineKeyboardButton(text="🇺🇸En", callback_data="en")
+    btn_gr = types.InlineKeyboardButton(text="🇩🇪Gr", callback_data="gr")
+    btn_fr = types.InlineKeyboardButton(text="🇫🇷Fr", callback_data="fr")
     keyboard.row(btn_uz, btn_ar, btn_en, btn_gr, btn_fr)
     return keyboard
 
 
-def generate_main_menu():
+def generate_main_menu(lang):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    btn_about = types.KeyboardButton(text="🎯 Biz haqimizda")
-    btn_connect = types.KeyboardButton(text="💬 Biz bilan bog‘laning")
-    btn_social = types.KeyboardButton(text="🌐 Ijtimoiy tarmoqlar")
-    btn_news = types.KeyboardButton(text="📑 Yangiliklar va E'lonlar")
-    btn_idea = types.KeyboardButton(text="📝 So‘rov va Fikr-mulohaza")
-    btn_data = types.KeyboardButton(text="📊 Yoshlar uchun resurslar")
-    btn_back = types.KeyboardButton(text="Tilni o'zgartirish")
-    keyboard.row(btn_about,btn_connect)
-    keyboard.row(btn_social,btn_news)
-    keyboard.row(btn_idea,btn_data)
+    btn_about = types.KeyboardButton(about_bot[lang])
+    btn_connect = types.KeyboardButton(connect_lang[lang])
+    btn_social = types.KeyboardButton(network[lang])
+    btn_news = types.KeyboardButton(news_lang[lang])
+    btn_idea = types.KeyboardButton(competitions[lang])
+    btn_data = types.KeyboardButton(resurs_lang[lang])
+    btn_back = types.KeyboardButton(change_lang[lang])
+    keyboard.row(btn_about, btn_connect)
+    keyboard.row(btn_social, btn_news)
+    keyboard.row(btn_idea, btn_data)
     keyboard.row(btn_back)
     return keyboard
 
 
-def generate_back():
+def generate_back(lang):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    btn_back = types.KeyboardButton(text="Orqaga")
+    btn_back = types.KeyboardButton(text=back_lang[lang])
     keyboard.row(btn_back)
     return keyboard
 
 
-def generate_connect():
+def generate_connect(lang):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    btn_quest = types.KeyboardButton(text="Savol/Taklif yuborish")
-    btn_location = types.KeyboardButton(text="Bizning Geolokatsiya")
-    btn_back = types.KeyboardButton(text="Orqaga")
+    btn_quest = types.KeyboardButton(text=quest_lang[lang])
+    btn_location = types.KeyboardButton(text=location[lang])
+    btn_back = types.KeyboardButton(text=back_lang[lang])
     keyboard.row(btn_quest, btn_location)
     keyboard.row(btn_back)
     return keyboard
 
 
 
-def commit():
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    btn_quest = types.KeyboardButton(text="Ha")
-    btn_location = types.KeyboardButton(text="Yo'q")
-    keyboard.row(btn_quest, btn_location)
+def commit(lang):
+    keyboard = types.InlineKeyboardMarkup()
+    btn_yes = types.InlineKeyboardButton(text=yes_lang[lang], callback_data="yes")
+    btn_no = types.InlineKeyboardButton(text=no_lang[lang], callback_data="no")
+    keyboard.row(btn_yes, btn_no)
     return keyboard
 
 
-def contact():
+def contact(lang):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    btn = types.KeyboardButton(text="Kontakt yuborish", request_contact=True)
+    btn = types.KeyboardButton(text=send_contact_lang[lang], request_contact=True)
     keyboard.row(btn)
     return keyboard
+
+def socialmedia(lang, url1, url2, url3, url4):
+    keyboard = types.InlineKeyboardMarkup()
+    btn_facebook = types.InlineKeyboardButton(text="Facebook", url=url1)
+    btn_instagram = types.InlineKeyboardButton(text="Instagram", url=url2)
+    btn_twitter = types.InlineKeyboardButton(text="Twitter", url=url3)
+    btn_youtube = types.InlineKeyboardButton(text="YouTube", url=url4)
+    btn_back = types.InlineKeyboardButton(text=back_lang[lang], callback_data="_back")
+    keyboard.row(btn_facebook, btn_instagram)
+    keyboard.row(btn_twitter, btn_youtube)
+    keyboard.row(btn_back)
+
+    return keyboard
+
+def globalopportunities(lang):
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    btn_request = types.KeyboardButton(text=keyboard_lang[lang])
+    btn_workplaces = types.KeyboardButton(text=job_prompts[lang])
+    btn_opportunities = types.KeyboardButton(text=research_lang[lang])
+    btn_back = types.KeyboardButton(text=back_lang[lang])
+    keyboard.row(btn_request, btn_workplaces, btn_opportunities)
+    keyboard.row(btn_back)
+    return keyboard
+
+
+def generate_resource(lang):
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    btn_request = types.KeyboardButton(text=educational_materials_lang[lang])
+    btn_workplaces = types.KeyboardButton(text=keyboard_lang_path[lang])
+    btn_opportunities = types.KeyboardButton(text="1")
+    btn_back = types.KeyboardButton(text=back_lang[lang])
+    keyboard.row(btn_request, btn_workplaces, btn_opportunities)
+    keyboard.row(btn_back)
+    return keyboard
+
+def generate_challange(lang):
+    keyboard = types.InlineKeyboardMarkup()
+    btn_request = types.InlineKeyboardButton(text=siyrat_lang[lang], callback_data="siyrat")
+    btn_back = types.InlineKeyboardButton(text=back_lang[lang], callback_data="_back")
+    keyboard.row(btn_request)
+    keyboard.row(btn_back)
+    return keyboard
+
+
