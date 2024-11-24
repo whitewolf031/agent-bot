@@ -110,13 +110,13 @@ competitions = dict(
 )
 
 
-siyrat_lang = dict(
-    uz="Siyrat challenge",
-    en="Siirat challenge",
-    ar="تحدي سيرات",
-    gr="Siirat-Herausforderung",
-    fr="Défi Siirat",
-)
+# siyrat_lang = dict(
+#     uz="Siyrat challenge",
+#     en="Siirat challenge",
+#     ar="تحدي سيرات",
+#     gr="Siirat-Herausforderung",
+#     fr="Défi Siirat",
+# )
 
 location = dict(
     uz="📍Bizning Geolokatsiya",
@@ -271,11 +271,19 @@ choose_language = dict(
 )
 
 fio_lang = dict(
-    uz="F.I.O yuboring:",
-    ar="إرسال F.I.O:",
-    en="Send F.I.O:",
-    gr="F.I.O. senden:",
-    fr="Envoyer F.I.O:"
+    uz="Ismingizni to'liq kiriting",
+    ar="اكتب اسمك الكامل.",
+    en="Write your full name.",
+    gr="chreiben Sie Ihren vollständigen Namen.",
+    fr="Écrivez votre nom complet."
+)
+
+question_lang = dict(
+    uz="Assalomu aleykum savol yo taklifingizni yuboring. ",
+    ar="السلام عليكم، أرسل سؤالك أو اقتراحك.",
+    en="Hello, send your question or suggestion.",
+    gr="Hallo, senden Sie Ihre Frage oder Ihren Vorschlag.",
+    fr="Bonjour, envoyez votre question ou suggestion."
 )
 
 send_email = dict(
@@ -286,7 +294,7 @@ send_email = dict(
     fr="Soumettez votre email"
 )
 request_lang = dict(
-    uz="⁉️Savol/Taklif yuborish",
+    uz="email to'gri",
     ar="⁉️أرسل سؤال/عرض",
     en="⁉️Send a question/offer",
     gr="⁉️Senden Sie eine Frage/ein Angebot",
@@ -302,11 +310,11 @@ email_text = dict(
 )
 
 phone_number_lang = {
-    "uz": "Tel raqamingizni +998  ***   ko'rinishida yuboring:",
-    "ar": "يرجى إرسال رقم هاتفك بتنسيق +998  ***  :",
-    "en": "Please send your phone number in the format +998  ***  :",
-    "fr": "Veuillez envoyer votre numéro de téléphone au format +998  ***  :",
-    "gr": "Bitte senden Sie Ihre Telefonnummer im Format +998  ***  **:"
+    "uz": "Siz bilan bog'lanish uchun iltimos telefon raqamingizni qoldiring",
+    "ar": "يرجى ترك رقم هاتفك حتى نتمكن من الاتصال بك.",
+    "en": "Please leave your phone number so we can contact you.",
+    "fr": "Veuillez laisser votre numéro de téléphone pour que nous puissions vous contacter.",
+    "gr": "Bitte hinterlassen Sie Ihre Telefonnummer, damit wir Sie kontaktieren können."
 }
 
 accept_answer_lang = dict(
@@ -317,5 +325,18 @@ accept_answer_lang = dict(
     fr="Votre réponse a été acceptée !",
 )
 
-question_lang = dict(uz="Savolingizni yuboring!", ar="يرجى إرسال سؤالك!", en="Please send your question!", fr="Veuillez envoyer votre question!", gr="Bitte senden Sie Ihre Frage!"
+chalange = dict(
+    uz="Musobaqalar qoshilsa xabar beramiz",
+    en="We will notify you if competitions are added.",
+    ar="سنخبرك إذا تمت إضافة مسابقات.",
+    gr="Wir benachrichtigen Sie, wenn Wettbewerbe hinzugefügt werden.",
+    fr="Nous vous informerons si des compétitions sont ajoutées."
+)
+
+category = dict(
+    uz="Bo'limlardan birini tanlang",
+    en="Choose a category",
+    ar="اختر أحد الأقسام.",
+    gr="Wählen Sie einen der Bereiche aus.",
+    fr="Choisissez l'une des sections."
 )

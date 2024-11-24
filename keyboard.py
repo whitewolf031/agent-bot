@@ -1,6 +1,13 @@
 from telebot import types
-
 from localization.lang import *
+
+
+def admin_panel_markup():
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn_news = types.KeyboardButton("Yangilik qo'shish")
+    btn_look = types.KeyboardButton("Bo'limlarni ko'rish")
+    keyboard.row(btn_news, btn_look)
+    return keyboard
 
 
 def generate_language():
@@ -96,12 +103,12 @@ def generate_resource(lang):
     keyboard.row(btn_back)
     return keyboard
 
-def generate_challange(lang):
-    keyboard = types.InlineKeyboardMarkup()
-    btn_request = types.InlineKeyboardButton(text=siyrat_lang[lang], callback_data="siyrat")
-    btn_back = types.InlineKeyboardButton(text=back_lang[lang], callback_data="_back")
-    keyboard.row(btn_request)
-    keyboard.row(btn_back)
-    return keyboard
+# def generate_challange(lang):
+#     keyboard = types.InlineKeyboardMarkup()
+#     btn_request = types.InlineKeyboardButton(text=siyrat_lang[lang], callback_data="siyrat")
+#     btn_back = types.InlineKeyboardButton(text=back_lang[lang], callback_data="_back")
+#     keyboard.row(btn_request)
+#     keyboard.row(btn_back)
+#     return keyboard
 
 

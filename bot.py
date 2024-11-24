@@ -1,6 +1,7 @@
 import os
 import time
 from telebot import TeleBot
+from db.users_id import UserIDsDB
 from keyboard import *
 from localization.lang import *
 from dotenv import load_dotenv
@@ -19,13 +20,96 @@ instagram_link = os.getenv("INSTAGRAM_URL")
 facebook_link = os.getenv("FACEBOOK_URL")
 youtube_link = os.getenv("YOUTUBE_URL")
 twitter_link = os.getenv("TWITTER_URL")
+db = UserIDsDB()
 
 
+@bot.message_handler(func=lambda message: True)
+def testing(message):
+
+    if message.text == '/start':
+        return start(message)
+
+    if message.text == '/admin':
+        return admin(message)
+
+#--------------------------------------Admin panel--------------------------------------
+# Adminlarning ID ro'yxati
+admin_id = list(map(int, os.getenv("ADMIN_ID").split(',')))
+
+@bot.message_handler(commands=["admin"])
+def admin(message):
+    chat_id = message.chat.id
+    if chat_id in admin_id:
+        bot.send_message(chat_id, "Admin panelga xush kelibsiz!", reply_markup=admin_panel_markup())
+        bot.register_next_step_handler(message, handle_admin_panel)
+    else:
+        bot.send_message(chat_id, "Siz admin emassiz!")
+
+@bot.message_handler(func=lambda message: message.chat.id in admin_id)
+def handle_admin_panel(message):
+    chat_id = message.chat.id
+
+    if message.text == "Yangilik qo'shish":
+        create_news = bot.send_message(chat_id, "Yangilik ni yuboring")
+        bot.register_next_step_handler(create_news, send_announcement)
+
+    elif message.text == "Bo'limlarni ko'rish":
+        bot.send_message(chat_id, "Bu bo'lim vaqtinchalik ishlamaydi.")
+        time.sleep(1)
+        bot.send_message(chat_id, "Bo'limlardan birini tanlang", reply_markup=admin_panel_markup())
+
+@bot.message_handler(content_types=["photo", "text"])
+def send_announcement(message):
+    chat_id = message.chat.id
+
+    if chat_id in admin_id:  # Faqat adminlarga ruxsat
+        if message.content_type == "photo":
+            # Rasm va captionni olish
+            photo_id = message.photo[-1].file_id
+            caption = message.caption if message.caption else "📢 Yangilik!"
+
+            # Foydalanuvchilarga yuborish
+            users = db.get_all_users()
+
+            if users:
+                for user_id in users:
+                    try:
+                        bot.send_photo(user_id, photo_id, caption=caption)
+                    except Exception as e:
+                        print(f"Xatolik {user_id} ga yuborishda: {e}")
+                bot.send_message(chat_id, "📸 Rasmli yangilik muvaffaqiyatli yuborildi!")
+                bot.send_message(chat_id, "bo'limlardan birini tanlang", reply_markup=admin_panel_markup())
+            else:
+                bot.send_message(chat_id, "Hozircha foydalanuvchilar ro'yxati bo'sh.")
+
+        elif message.content_type == "text":
+            # Textli yangilikni olish
+            news_text = message.text
+
+            # Foydalanuvchilarga yuborish
+            users = db.get_all_users()
+
+            if users:
+                for user_id in users:
+                    try:
+                        bot.send_message(user_id, news_text)
+                    except Exception as e:
+                        print(f"Xatolik {user_id} ga yuborishda: {e}")
+                bot.send_message(chat_id, "✉️ Textli yangilik muvaffaqiyatli yuborildi!")
+                bot.send_message(chat_id, "bo'limlardan birini tanlang", reply_markup=admin_panel_markup())
+            else:
+                bot.send_message(chat_id, "Hozircha foydalanuvchilar ro'yxati bo'sh.")
+    else:
+        bot.send_message(chat_id, "⛔ Siz admin emassiz, yangilik yuborolmaysiz!")
+
+
+#-------------------------------------Start------------------------------------------
 
 @bot.message_handler(commands=["start"])
 def start(message):
     chat_id = message.chat.id
     lang = user_langs.get(chat_id, "uz")
+    db.insert_user(chat_id)  # Foydalanuvchi ID'sini saqlaymiz
     photo = open("media/start_image.jpg", "rb")
     bot.send_photo(chat_id, photo, start_message[lang], reply_markup=generate_language())
 
@@ -80,7 +164,10 @@ def main_menu(message):
         bot.register_next_step_handler(message, news)
 
     elif message.text == competitions[lang]:
-        bot.send_photo(chat_id, photo, caption=siyrat_lang[lang], reply_markup=generate_challange(lang))
+        bot.send_message(chat_id, chalange[lang])
+        time.sleep(1)
+        bot.send_message(chat_id, category[lang], reply_markup=generate_main_menu(lang))
+        # bot.send_photo(chat_id, photo, caption=siyrat_lang[lang], reply_markup=generate_challange(lang))
 
 
     elif message.text == resurs_lang[lang]:
@@ -103,73 +190,59 @@ def connect(message):
         bot.register_next_step_handler(message, back_connect)
 
     elif message.text == quest_lang[lang]:
-        bot.send_message(chat_id, fio_lang[lang])
-        bot.register_next_step_handler(message, user_email)
+        bot.send_message(chat_id, question_lang[lang])
+        bot.register_next_step_handler(message, user_name)
 
 
     elif message.text == back_lang[lang]:
         return back(message)
 
-
-
-def user_email(message):
-    fio = message.text
-    chat_id = message.chat.id
-    lang = user_langs.get(chat_id, "uz")
-
-    bot.send_message(chat_id, send_email[lang])
-    bot.register_next_step_handler(message, user_question,fio)
-
-
-def user_question(message, fio):
-    email = message.text
-
-    chat_id = message.chat.id
-    lang = user_langs.get(chat_id, "uz")
-
-    if "@" in email:
-        bot.send_message(chat_id, request_lang[lang])
-        bot.register_next_step_handler(message, user_phone,  fio, email)
-
-    else:
-        bot.send_message(chat_id, email_text[lang])
-        time.sleep(1)
-        bot.send_message(chat_id, send_email[lang])
-        bot.register_next_step_handler(message, user_question, fio)
-3
-
-def user_phone(message, fio, email):
+def user_name(message):
     quest = message.text
     chat_id = message.chat.id
     lang = user_langs.get(chat_id, "uz")
 
+    bot.send_message(chat_id, fio_lang[lang])
+    bot.register_next_step_handler(message, user_question, quest)
+
+
+
+# def user_email(message, quest):
+#     name = message.text
+#     chat_id = message.chat.id
+#     lang = user_langs.get(chat_id, "uz")
+#
+#     bot.send_message(chat_id, send_email[lang])
+#     bot.register_next_step_handler(message, user_question, name, quest)
+
+
+def user_question(message, quest):
+    name = message.text
+    chat_id = message.chat.id
+    lang = user_langs.get(chat_id, "uz")
+
     bot.send_message(chat_id, phone_number_lang[lang], reply_markup=contact(lang))
-    bot.register_next_step_handler(message, send_group_message, fio, quest, email)
+    bot.register_next_step_handler(message, send_group_message, name, quest)
 
-
-def send_group_message(message, fio, quest, email):
+def send_group_message(message, name, quest):
     chat_id = message.chat.id
     lang = user_langs.get(chat_id, "uz")
 
     if message.text:
         phone = message.text
-        personal_details['fio'] = fio
-        personal_details['email'] = email
+        personal_details['name'] = name
         personal_details['quest'] = quest
         personal_details['phone'] = phone
-        bot.send_message(chat_id, f"{confirm_lang[lang]} {fio}\n"
-                                  f"{email_prompts_lang[lang]} {email}\n"
+        bot.send_message(chat_id, f"{confirm_lang[lang]} {name}\n"
                                   f"{quest_offer_lang[lang]}{quest}\n"
                                   f"{user_phone_number_lang[lang]} {phone}", reply_markup=commit(lang))
 
     elif message.contact:
         phone = message.contact.phone_number
-        personal_details['fio'] = fio
-        personal_details['email'] = email
+        personal_details['name'] = name
         personal_details['quest'] = quest
         personal_details['phone'] = phone
-        bot.send_message(chat_id, f"{confirm_lang[lang]} {fio}\n"
-                                  f"{email_prompts_lang[lang]} {email}\n"
+        bot.send_message(chat_id, f"{confirm_lang[lang]} {name}\n"
                                   f"{quest_offer_lang[lang]}{quest}\n"
                                   f"{user_phone_number_lang[lang]} {phone}", reply_markup=commit(lang))
 
@@ -177,16 +250,14 @@ def send_group_message(message, fio, quest, email):
 @bot.callback_query_handler(func=lambda call: call.data in ["yes", "no"])
 def message_commit(call):
     chat_id = call.message.chat.id
-    fio = personal_details['fio']
-    email = personal_details['email']
+    name = personal_details['name']
     quest = personal_details['quest']
     phone = personal_details['phone']
     lang = user_langs.get(chat_id, "uz")
 
     if call.data == 'yes':
         bot.send_message(chat_id, information_received_lang[lang])
-        bot.send_message(canal_id, f"{confirm_lang[lang]} {fio}\n"
-                                  f"{email_prompts_lang[lang]} {email}\n"
+        bot.send_message(canal_id, f"{confirm_lang[lang]} {name}\n"
                                   f"{quest_offer_lang[lang]}{quest}\n"
                                   f"{user_phone_number_lang[lang]} {phone}")
         time.sleep(3)
