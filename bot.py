@@ -1,5 +1,7 @@
 import os
 import time
+from datetime import datetime
+import schedule
 from telebot import TeleBot
 from db.users_id import UserIDsDB
 from keyboard import *
@@ -205,17 +207,6 @@ def user_name(message):
     bot.send_message(chat_id, fio_lang[lang])
     bot.register_next_step_handler(message, user_question, quest)
 
-
-
-# def user_email(message, quest):
-#     name = message.text
-#     chat_id = message.chat.id
-#     lang = user_langs.get(chat_id, "uz")
-#
-#     bot.send_message(chat_id, send_email[lang])
-#     bot.register_next_step_handler(message, user_question, name, quest)
-
-
 def user_question(message, quest):
     name = message.text
     chat_id = message.chat.id
@@ -295,15 +286,12 @@ def back(message):
         bot.register_next_step_handler(message, main_menu)
 
 
-
 def news(message):
     chat_id = message.chat.id
     lang = user_langs.get(chat_id, "uz")
     bot.send_message(chat_id, choose_language[lang], reply_markup=generate_main_menu(lang))
 
     bot.register_next_step_handler(message, main_menu)
-
-
 
 #########################################
 #Musobaqa
@@ -320,15 +308,9 @@ def send_answer_tournament(message):
     bot.send_message(chat_id, choose_language[lang], reply_markup=generate_main_menu(lang))
     bot.register_next_step_handler(message, main_menu)
 
-
-
 #########################################
 #inline
 #########################################
-
-
-
-
 
 @bot.callback_query_handler(func=lambda call: call.data == "siyrat")
 def siyrat_inline(call):
@@ -338,8 +320,6 @@ def siyrat_inline(call):
     bot.send_message(chat_id, question_lang[lang])
     bot.register_next_step_handler(call.message, send_answer_tournament)
 
-
-
 @bot.callback_query_handler(func=lambda call: call.data == "_back")
 def back_inline(call):
     chat_id = call.message.chat.id
@@ -348,8 +328,18 @@ def back_inline(call):
 
     bot.register_next_step_handler(call.message, main_menu)
 
+def send_status_update():
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Hozirgi vaqtni olish
+    message = f"*iTechAcademy* Bot is working. \n*Date & Time*: {current_time}"  # Xabarga vaqtni qo'shish
+    bot.send_message(canal_id, message, parse_mode="Markdown")
 
-
-
+send_status_update()
+schedule.every(30).minutes.do(send_status_update)
+schedule.every().hour.do(send_status_update)
+schedule.every().day.at("10:30").do(send_status_update)
 
 bot.polling(non_stop=True)
+
+while True:
+    schedule.run_pending()
+    time.sleep(1)
